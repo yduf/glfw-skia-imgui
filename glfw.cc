@@ -1,4 +1,5 @@
 #define GLFW_INCLUDE_NONE
+#include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
 #include <imgui.h>
@@ -20,7 +21,16 @@
 
 #include "include/gpu/ganesh/gl/GrGLDirectContext.h"
 
-#include <GL/gl.h>
+#include "include/core/SkFont.h"
+#include "include/core/SkString.h"
+#include "include/core/SkTypeface.h"
+#include "include/core/SkStream.h"
+#include "include/core/SkRRect.h"
+#include "include/core/SkTextBlob.h"
+#include "include/core/SkPathEffect.h"
+
+#include "include/effects/Sk1DPathEffect.h"
+
 
 // Setup Dear ImGui context
 void setupImGui(GLFWwindow* window) {
@@ -61,6 +71,9 @@ void renderImGui() {
 GrDirectContext* sContext = nullptr;
 SkSurface* sSurface = nullptr;
 
+void error_callback(int error, const char* description) {
+	fputs(description, stderr);
+}
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -93,11 +106,76 @@ void init_skia(int w, int h) {
 	if (sSurface == nullptr) abort();
 }
 
+// Function to draw a path using a circular brush
+void drawPathWithCircularBrush(SkCanvas* canvas, const SkPath& path, float circleRadius, float spacing) {
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setColor(SK_ColorBLACK);
+
+    // Create a circular path to use as the brush
+    SkPath circleBrush;
+    circleBrush.addCircle(0, 0, circleRadius);
+
+    // Create a PathEffect to place the circle along the path at regular intervals
+    // SkPath1DPathEffect::Make will create the brush effect
+    sk_sp<SkPathEffect> pathEffect = SkPath1DPathEffect::Make(circleBrush, spacing, 0, SkPath1DPathEffect::kRotate_Style);
+
+    // Apply the path effect to the paint
+    paint.setPathEffect(pathEffect);
+
+    // Draw the path with the path effect applied
+    paint.setARGB(128, 0, 0, 255);  // 50% transparent blue
+    canvas->drawPath(path, paint);
+}
+
+void drawExample(SkCanvas* canvas) {
+    canvas->drawColor(SK_ColorWHITE);
+
+    SkPaint paint;
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(4);
+    paint.setColor(SK_ColorRED);
+
+    SkRect rect = SkRect::MakeXYWH(50, 50, 40, 60);
+    canvas->drawRect(rect, paint);
+
+    SkRRect oval;
+    oval.setOval(rect);
+    oval.offset(40, 60);
+    paint.setColor(SK_ColorBLUE);
+    canvas->drawRRect(oval, paint);
+
+    paint.setColor(SK_ColorCYAN);
+    canvas->drawCircle(180, 50, 25, paint);
+
+    rect.offset(80, 0);
+    paint.setColor(SK_ColorYELLOW);
+    canvas->drawRoundRect(rect, 10, 10, paint);
+
+    SkPath path;
+    path.cubicTo(768, 0, -512, 256, 256, 256);
+    paint.setColor(SK_ColorGREEN);
+    //canvas->drawPath(path, paint);
+    drawPathWithCircularBrush( canvas, path, 10, 4);
+
+    //canvas->drawImage(image, 128, 128, SkSamplingOptions(), &paint);
+
+    SkRect rect2 = SkRect::MakeXYWH(0, 0, 40, 60);
+    //canvas->drawImageRect(image, rect2, SkSamplingOptions(), &paint);
+
+    SkPaint paint2;
+    auto text = SkTextBlob::MakeFromString("Hello, Skia!", SkFont(nullptr, 18));
+    canvas->drawTextBlob(text.get(), 50, 25, paint2);
+}
+
+
 const int kWidth = 960;
 const int kHeight = 640;
 
 int main(int argc, char **argv) {
     // Initialize GLFW
+	glfwSetErrorCallback(error_callback);
     if (!glfwInit()) return -1;
 
     // Create OpenGL window
@@ -132,9 +210,14 @@ int main(int argc, char **argv) {
         // Skia
         SkPaint paint;
 		paint.setColor(SK_ColorWHITE);
-		canvas->drawPaint(paint);
+		//canvas->drawPaint(paint);
+
 		paint.setColor(SK_ColorBLUE);
-		canvas->drawRect({100, 200, 300, 500}, paint);
+		//canvas->drawRect({100, 200, 300, 500}, paint);
+
+        //drawCircleWithNumber( canvas, SkPoint::Make( 400, 500), 50, 25);
+        drawExample( canvas);
+
 		sContext->flush();
 
 

@@ -31,3 +31,5 @@ $ meson setup build .
 $ meson compile -C build 
 $ ./build/glfw
 ```
+
+![demo](doc/2025-06-04_08-00.png)

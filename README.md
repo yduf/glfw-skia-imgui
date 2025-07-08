@@ -33,3 +33,7 @@ $ ./build/glfw
 ```
 
 ![demo](doc/2025-06-04_08-00.png)
+
+
+## CHANGELOG
+2025-07-08 - add [Implot](https://github.com/epezent/implot?tab=readme-ov-file#implot)

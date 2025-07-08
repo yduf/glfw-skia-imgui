@@ -1,0 +1,9 @@
+[wrap-git]
+directory = implot
+url = https://github.com/epezent/implot.git
+
+# Or pin a specific commit
+revision = master
+depth = 1
+
+patch_directory = implot

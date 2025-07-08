@@ -7,6 +7,9 @@ glfw_dep = dependency('glfw3')
 imgui_dep = subproject('imgui', version: '>=1.91.0')
 imgui = imgui_dep.get_variable('imgui_dep')
 
+# Imgui extension
+implot_dep = dependency('implot')
+implot_sources = subproject('implot').get_variable('implot_sources')
 
 project = include_directories('.')
 myFunc  = include_directories('/home/yves/DEV/cpp')
@@ -26,8 +29,10 @@ skia_dep = declare_dependency(
 )
 
 
-exe = executable('glfw', 'glfw.cc', 
-                    dependencies : [ glfw_dep, imgui, 
+exe = executable( 'glfw', 'glfw.cc', 
+                   implot_sources,  # 👈 add implot sources to your build
+                    dependencies : [ glfw_dep,
+                                      imgui, implot_dep, 
                                       skia_dep, freetype_dep, opengl_dep],
                     include_directories : [ project, myFunc],
                     install : true)

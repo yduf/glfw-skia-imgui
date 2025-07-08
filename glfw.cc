@@ -6,6 +6,9 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+// Imgui extension
+#include <implot.h>
+
 // Skia support
 #define SK_GANESH
 #define SK_GL
@@ -37,6 +40,8 @@ void setupImGui(GLFWwindow* window) {
     // Initialize ImGui
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImPlot::CreateContext();
+
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
@@ -53,17 +58,10 @@ void setupImGui(GLFWwindow* window) {
 #include <iostream>
 
 void renderImGui() {
-    // Tell OpenGL a new frame is about to begin
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
     // Example ImGui window
     ImGui::Begin("Hello, ImGui!");
     ImGui::Text("This is a simple GUI example.");
     ImGui::End();
-
-    ImGui::Render();
 }
 
 
@@ -204,8 +202,12 @@ int main(int argc, char **argv) {
 
         glfwPollEvents();
 
-        // Start rendering ImGui
-        renderImGui();
+        // Tell OpenGL a new frame is about to begin
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        renderImGui(); // some UI
 
         // Skia
         SkPaint paint;
@@ -218,10 +220,12 @@ int main(int argc, char **argv) {
         //drawCircleWithNumber( canvas, SkPoint::Make( 400, 500), 50, 25);
         drawExample( canvas);
 
-		sContext->flush();
+        // Implot demo
+        ImPlot::ShowDemoWindow();
 
-
-        // Render ImGui
+        ///
+        sContext->flush();              // draw skia
+        ImGui::Render();                // render imgui
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Swap buffers
